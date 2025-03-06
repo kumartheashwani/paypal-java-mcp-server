@@ -6,7 +6,16 @@ WORKDIR /app
 COPY target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar /app/app.jar
 
 # Create a log directory
-RUN mkdir -p /logs
+RUN mkdir -p /logs && chmod 777 /logs
+
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=stdio
+ENV LOGGING_FILE_NAME=/logs/mcp-server.log
+ENV LOGGING_LEVEL_COM_EXAMPLE_MCPSERVER=DEBUG
+ENV SPRING_JMX_ENABLED=false
+ENV SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+ENV SPRING_MVC_ASYNC_REQUEST_TIMEOUT=60000
 
 # The command will be provided by Smithery configuration
-# Smithery will run: java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar 
+# Smithery will run: java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar
+# But we also set these as environment variables for redundancy 

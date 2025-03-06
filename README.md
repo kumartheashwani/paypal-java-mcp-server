@@ -59,10 +59,17 @@ Run the application as a JSON-RPC stdio server:
 ./run-stdio.sh
 ```
 
-Or directly:
+Or directly with all required configuration parameters:
 
 ```bash
-java -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
+java \
+  -Dspring.profiles.active=stdio \
+  -Dlogging.file.name=logs/mcp-server.log \
+  -Dlogging.level.com.example.mcpserver=DEBUG \
+  -Dspring.jmx.enabled=false \
+  -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration \
+  -Dspring.mvc.async.request-timeout=60000 \
+  -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
 ```
 
 ## API Usage
@@ -230,9 +237,21 @@ To deploy this server to Smithery:
 
 3. Configure Smithery to use the provided `smithery-config.json` file.
 
-4. Alternatively, you can manually configure Smithery to run:
+4. Start the service using the provided script:
    ```bash
-   java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar app.jar
+   ./start.sh
+   ```
+
+   Or with the explicit command:
+   ```bash
+   java \
+     -Dspring.profiles.active=stdio \
+     -Dlogging.file.name=logs/mcp-server.log \
+     -Dlogging.level.com.example.mcpserver=DEBUG \
+     -Dspring.jmx.enabled=false \
+     -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration \
+     -Dspring.mvc.async.request-timeout=60000 \
+     -jar app.jar
    ```
 
 The Smithery configuration includes:

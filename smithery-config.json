@@ -7,12 +7,20 @@
   "args": [
     "-Dspring.profiles.active=stdio",
     "-Dlogging.file.name=/logs/mcp-server.log",
+    "-Dlogging.level.com.example.mcpserver=DEBUG",
+    "-Dspring.jmx.enabled=false",
+    "-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration",
+    "-Dspring.mvc.async.request-timeout=60000",
     "-jar",
     "/app/app.jar"
   ],
   "env": {
     "SPRING_PROFILES_ACTIVE": "stdio",
-    "LOGGING_FILE_NAME": "/logs/mcp-server.log"
+    "LOGGING_FILE_NAME": "/logs/mcp-server.log",
+    "LOGGING_LEVEL_COM_EXAMPLE_MCPSERVER": "DEBUG",
+    "SPRING_JMX_ENABLED": "false",
+    "SPRING_AUTOCONFIGURE_EXCLUDE": "org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration",
+    "SPRING_MVC_ASYNC_REQUEST_TIMEOUT": "60000"
   },
   "capabilities": {
     "completions": true,
