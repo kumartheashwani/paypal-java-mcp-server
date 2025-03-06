@@ -1,24 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- File appender -->
+    <!-- File appender with configurable path -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/mcp-server.log</file>
+        <!-- Use property substitution for the log file path -->
+        <file>${LOG_FILE:-logs/mcp-server.log}</file>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Explicitly disable console appender -->
+    <!-- Stderr appender for console output -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Explicitly disable stdout appender -->
     <appender name="NULL" class="ch.qos.logback.core.helpers.NOPAppender"/>
 
-    <!-- Set root logger to use FILE appender -->
+    <!-- Set root logger to use FILE and STDERR appenders -->
     <root level="INFO">
         <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
     </root>
 
     <!-- Set specific logger levels -->
-    <logger name="com.example.mcpserver" level="DEBUG" additivity="false">
+    <logger name="com.example.mcpserver" level="${LOG_LEVEL_COM_EXAMPLE_MCPSERVER:-DEBUG}" additivity="false">
         <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
+    </logger>
+
+    <!-- Explicitly disable Spring Boot's default console logging to stdout -->
+    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger" level="INFO" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
+    </logger>
+
+    <!-- Disable Spring Boot banner on stdout -->
+    <logger name="org.springframework.boot.SpringApplication" level="INFO" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
+    </logger>
+
+    <!-- Disable Tomcat startup logs on stdout -->
+    <logger name="org.apache.catalina" level="INFO" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
+    </logger>
+
+    <!-- Disable Tomcat/Spring web logs on stdout -->
+    <logger name="org.apache.coyote" level="INFO" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
+    </logger>
+
+    <!-- Disable Spring web logs on stdout -->
+    <logger name="org.springframework.web" level="INFO" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDERR" />
     </logger>
 
     <!-- Explicitly redirect console output to NULL -->

@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Configuration;
 public class JsonRpcStdioApplication {
 
     public static void main(String[] args) {
+        // Configure Spring Boot to not use stdout for logging
+        System.setProperty("logging.pattern.console", "");
+        System.setProperty("spring.main.banner-mode", "off");
+        System.setProperty("spring.output.ansi.enabled", "never");
+        
         SpringApplication app = new SpringApplication(JsonRpcStdioApplication.class);
         
         // Disable banner and startup info to keep stdout clean

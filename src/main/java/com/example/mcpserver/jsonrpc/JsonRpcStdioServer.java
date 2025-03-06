@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,11 +27,14 @@ public class JsonRpcStdioServer implements CommandLineRunner {
     public JsonRpcStdioServer(JsonRpcHandler jsonRpcHandler, ObjectMapper objectMapper) {
         this.jsonRpcHandler = jsonRpcHandler;
         this.objectMapper = objectMapper;
+        
+        // Log to stderr only
         log.info("JsonRpcStdioServer initialized");
     }
 
     @Override
     public void run(String... args) {
+        // Log to stderr only
         log.info("Starting JSON-RPC stdio server");
         
         // Process a dummy initialize request to ensure capabilities are loaded
@@ -62,9 +66,7 @@ public class JsonRpcStdioServer implements CommandLineRunner {
     }
     
     private void processStdio() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-             PrintWriter writer = new PrintWriter(System.out, true)) {
-            
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             log.debug("Stdio processor thread started");
             
             String line;
@@ -76,8 +78,12 @@ public class JsonRpcStdioServer implements CommandLineRunner {
                 try {
                     log.debug("Received line from stdin: {}", line);
                     String response = jsonRpcHandler.handleRequest(line);
-                    writer.println(response);
-                    writer.flush();
+                    
+                    // Write directly to System.out for JSON-RPC responses
+                    // This bypasses any redirection that might be happening
+                    System.out.println(response);
+                    System.out.flush();
+                    
                     log.debug("Wrote response to stdout");
                 } catch (Exception e) {
                     log.error("Error handling request", e);
@@ -89,8 +95,11 @@ public class JsonRpcStdioServer implements CommandLineRunner {
                                 e.getMessage()
                         );
                         String errorJson = objectMapper.writeValueAsString(errorResponse);
-                        writer.println(errorJson);
-                        writer.flush();
+                        
+                        // Write errors to System.out as well since they are part of the JSON-RPC protocol
+                        System.out.println(errorJson);
+                        System.out.flush();
+                        
                         log.debug("Wrote error response to stdout: {}", errorJson);
                     } catch (Exception ex) {
                         log.error("Failed to write error response", ex);
