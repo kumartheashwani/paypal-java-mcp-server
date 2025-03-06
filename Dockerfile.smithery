@@ -13,8 +13,8 @@ ENV SPRING_PROFILES_ACTIVE=stdio
 ENV LOGGING_FILE_NAME=/logs/mcp-server.log
 ENV LOGGING_LEVEL_COM_EXAMPLE_MCPSERVER=DEBUG
 ENV SPRING_JMX_ENABLED=false
-ENV SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-ENV SPRING_MVC_ASYNC_REQUEST_TIMEOUT=60000
+ENV SPRING_MAIN_WEB_APPLICATION_TYPE=none
+ENV SPRING_MVC_ASYNC_REQUEST_TIMEOUT=60s
 
 # The command will be provided by Smithery configuration
 # Smithery will run: java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar
