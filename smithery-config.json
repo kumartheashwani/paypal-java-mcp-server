@@ -6,9 +6,11 @@
   "command": "java",
   "args": [
     "-Dspring.profiles.active=stdio",
-    "-Dspring.main.web-application-type=none",
+    "-Dspring.main.web-application-type=NONE",
     "-Dlogging.file.name=/logs/mcp-server.log",
     "-Dlogging.level.com.example.mcpserver=DEBUG",
+    "-Dlogging.pattern.console=",
+    "-Dlogging.config=classpath:logback-stdio.xml",
     "-Dspring.jmx.enabled=false",
     "-Dspring.mvc.async.request-timeout=60s",
     "-jar",
@@ -18,6 +20,7 @@
     "SPRING_PROFILES_ACTIVE": "stdio",
     "LOGGING_FILE_NAME": "/logs/mcp-server.log",
     "LOGGING_LEVEL_COM_EXAMPLE_MCPSERVER": "DEBUG",
+    "LOGGING_PATTERN_CONSOLE": "",
     "SPRING_JMX_ENABLED": "false",
     "SPRING_MAIN_WEB_APPLICATION_TYPE": "none",
     "SPRING_MVC_ASYNC_REQUEST_TIMEOUT": "60s"

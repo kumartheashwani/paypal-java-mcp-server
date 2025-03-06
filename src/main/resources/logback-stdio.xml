@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- File appender -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/mcp-server.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Explicitly disable console appender -->
+    <appender name="NULL" class="ch.qos.logback.core.helpers.NOPAppender"/>
+
+    <!-- Set root logger to use FILE appender -->
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- Set specific logger levels -->
+    <logger name="com.example.mcpserver" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE" />
+    </logger>
+
+    <!-- Explicitly redirect console output to NULL -->
+    <logger name="CONSOLE" level="OFF" additivity="false">
+        <appender-ref ref="NULL" />
+    </logger>
+</configuration> 

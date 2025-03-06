@@ -13,6 +13,8 @@ java \
   -Dspring.main.web-application-type=NONE \
   -Dlogging.file.name=logs/mcp-server.log \
   -Dlogging.level.com.example.mcpserver=DEBUG \
+  -Dlogging.pattern.console= \
+  -Dlogging.config=classpath:logback-stdio.xml \
   -Dspring.jmx.enabled=false \
   -Dspring.main.lazy-initialization=true \
   -Dspring.mvc.async.request-timeout=60s \
