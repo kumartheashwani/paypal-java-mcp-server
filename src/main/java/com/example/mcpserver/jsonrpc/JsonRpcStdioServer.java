@@ -26,14 +26,26 @@ public class JsonRpcStdioServer implements CommandLineRunner {
     public JsonRpcStdioServer(JsonRpcHandler jsonRpcHandler, ObjectMapper objectMapper) {
         this.jsonRpcHandler = jsonRpcHandler;
         this.objectMapper = objectMapper;
+        log.info("JsonRpcStdioServer initialized");
     }
 
     @Override
     public void run(String... args) {
         log.info("Starting JSON-RPC stdio server");
         
+        // Create a dedicated thread for handling stdin/stdout to avoid blocking the main thread
+        Thread stdioThread = new Thread(this::processStdio, "stdio-processor");
+        stdioThread.setDaemon(false);
+        stdioThread.start();
+        
+        log.info("JSON-RPC stdio server started and ready to process requests");
+    }
+    
+    private void processStdio() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
              PrintWriter writer = new PrintWriter(System.out, true)) {
+            
+            log.debug("Stdio processor thread started");
             
             String line;
             while (running.get() && (line = reader.readLine()) != null) {
@@ -42,29 +54,40 @@ public class JsonRpcStdioServer implements CommandLineRunner {
                 }
                 
                 try {
+                    log.debug("Received line from stdin: {}", line);
                     String response = jsonRpcHandler.handleRequest(line);
                     writer.println(response);
                     writer.flush();
+                    log.debug("Wrote response to stdout");
                 } catch (Exception e) {
                     log.error("Error handling request", e);
-                    JsonRpcResponse errorResponse = JsonRpcResponse.error(
-                            null, 
-                            -32603, 
-                            "Internal error", 
-                            e.getMessage()
-                    );
-                    writer.println(objectMapper.writeValueAsString(errorResponse));
-                    writer.flush();
+                    try {
+                        JsonRpcResponse errorResponse = JsonRpcResponse.error(
+                                null, 
+                                -32603, 
+                                "Internal error", 
+                                e.getMessage()
+                        );
+                        String errorJson = objectMapper.writeValueAsString(errorResponse);
+                        writer.println(errorJson);
+                        writer.flush();
+                        log.debug("Wrote error response to stdout: {}", errorJson);
+                    } catch (Exception ex) {
+                        log.error("Failed to write error response", ex);
+                    }
                 }
             }
+            
+            log.info("Stdio processor thread exiting");
         } catch (Exception e) {
-            log.error("Error in JSON-RPC stdio server", e);
+            log.error("Fatal error in JSON-RPC stdio server", e);
         }
         
         log.info("JSON-RPC stdio server stopped");
     }
     
     public void stop() {
+        log.info("Stopping JSON-RPC stdio server");
         running.set(false);
     }
 } 

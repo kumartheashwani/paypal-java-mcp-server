@@ -4,6 +4,7 @@ import com.example.mcpserver.model.McpRequest;
 import com.example.mcpserver.model.McpResponse;
 import com.example.mcpserver.service.McpService;
 import com.example.mcpserver.service.ToolExecutorService;
+import com.example.mcpserver.service.ToolRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class JsonRpcHandler {
 
     private final McpService mcpService;
     private final ToolExecutorService toolExecutorService;
+    private final ToolRegistry toolRegistry;
     private final ObjectMapper objectMapper;
     
     private static final int PARSE_ERROR = -32700;
@@ -35,10 +37,13 @@ public class JsonRpcHandler {
      * @return The JSON-RPC response as a string
      */
     public String handleRequest(String jsonRequest) {
+        log.debug("Received JSON-RPC request: {}", jsonRequest);
         try {
             JsonRpcRequest request = objectMapper.readValue(jsonRequest, JsonRpcRequest.class);
             JsonRpcResponse response = processRequest(request);
-            return objectMapper.writeValueAsString(response);
+            String responseStr = objectMapper.writeValueAsString(response);
+            log.debug("Sending JSON-RPC response: {}", responseStr);
+            return responseStr;
         } catch (Exception e) {
             log.error("Error parsing JSON-RPC request", e);
             JsonRpcResponse response = JsonRpcResponse.error(null, PARSE_ERROR, "Parse error", e.getMessage());
@@ -62,12 +67,16 @@ public class JsonRpcHandler {
             return JsonRpcResponse.error(request.getId(), INVALID_REQUEST, "Invalid request", "Method is required");
         }
         
+        log.info("Processing JSON-RPC request: method={}, id={}", request.getMethod(), request.getId());
+        
         try {
             switch (request.getMethod()) {
                 case "completions":
                     return handleCompletions(request);
                 case "executeFunction":
                     return handleExecuteFunction(request);
+                case "getTools":
+                    return handleGetTools(request);
                 default:
                     return JsonRpcResponse.error(request.getId(), METHOD_NOT_FOUND, "Method not found", request.getMethod());
             }
@@ -117,6 +126,22 @@ public class JsonRpcHandler {
         } catch (Exception e) {
             log.error("Error handling execute function request", e);
             return JsonRpcResponse.error(request.getId(), INVALID_PARAMS, "Invalid params", e.getMessage());
+        }
+    }
+    
+    /**
+     * Handles a get tools request
+     * 
+     * @param request The JSON-RPC request
+     * @return The JSON-RPC response with the list of available tools
+     */
+    private JsonRpcResponse handleGetTools(JsonRpcRequest request) {
+        try {
+            log.info("Handling getTools request");
+            return JsonRpcResponse.success(request.getId(), toolRegistry.getAvailableTools());
+        } catch (Exception e) {
+            log.error("Error handling get tools request", e);
+            return JsonRpcResponse.error(request.getId(), INTERNAL_ERROR, "Internal error", e.getMessage());
         }
     }
 } 
