@@ -31,10 +31,49 @@ java -Dspring.profiles.active=stdio -Dspring.main.web-application-type=NONE -jar
 
 In this mode, the server reads JSON-RPC requests from stdin and writes responses to stdout. All logs are written to stderr and a log file.
 
+**IMPORTANT**: The JSON-RPC stdio interface requires stdin/stdout connectivity. When deploying, ensure that the process has access to stdin/stdout, typically by running it in interactive mode.
+
 You can test the stdio mode using the provided test script:
 
 ```bash
 ./test-stdio.sh
+```
+
+#### Running in Non-Interactive Environments
+
+If you need to run the server in a non-interactive environment, you can use the provided `start-non-interactive.sh` script, which creates named pipes for stdin/stdout:
+
+```bash
+./start-non-interactive.sh
+```
+
+This script will:
+1. Create named pipes for stdin and stdout
+2. Start the server in the background
+3. Print the paths to the pipes and example commands for interacting with them
+
+You can then interact with the server by writing to the input pipe and reading from the output pipe:
+
+```bash
+# Send a request
+echo '{"jsonrpc":"2.0","method":"getTools","id":"1"}' > /path/to/input_pipe
+
+# Read responses
+cat /path/to/output_pipe
+```
+
+#### Running with Docker
+
+When running the server in a Docker container, you must use the `-i` flag to provide stdin connectivity:
+
+```bash
+docker run -i paypal-mcp-jsonrpc
+```
+
+The provided `run-docker.sh` script handles this for you:
+
+```bash
+./run-docker.sh
 ```
 
 ## JSON-RPC Protocol
@@ -85,6 +124,7 @@ The server includes a `smithery-config.json` file that configures the server for
 {
   "name": "paypal-java-mcp-server",
   "type": "stdio",
+  "interactive": true,
   "command": "java",
   "args": [
     "-Dspring.profiles.active=stdio",
@@ -97,7 +137,10 @@ The server includes a `smithery-config.json` file that configures the server for
 }
 ```
 
-**Important**: When using the server with Smithery, ensure that you are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP. The server will not start a web server when running with the `stdio` profile.
+**Important**: When using the server with Smithery, ensure that:
+1. The `interactive` flag is set to `true` in the Smithery configuration
+2. You are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP
+3. The server will not start a web server when running with the `stdio` profile
 
 ## Prerequisites
 
@@ -298,7 +341,7 @@ docker build --target rest-api -t paypal-mcp-rest-api .
 #### Build JSON-RPC Server Image Only
 
 ```bash
-docker build -f Dockerfile.jsonrpc -t paypal-mcp-jsonrpc .
+docker build -f Dockerfile.smithery -t paypal-mcp-jsonrpc .
 ```
 
 ### Running with Docker
@@ -320,7 +363,7 @@ docker run -i paypal-mcp-jsonrpc
 Or use the provided script:
 
 ```bash
-./run-docker-jsonrpc.sh
+./run-docker.sh
 ```
 
 #### Using Docker Compose
@@ -332,6 +375,35 @@ docker-compose up rest-api
 ```
 
 Note: The JSON-RPC stdio server is not typically run directly with docker-compose since it requires stdin/stdout interaction.
+
+## Troubleshooting
+
+### Common Issues
+
+#### "The server's tool list is not accessible"
+
+If you see an error indicating that the server's tool list is not accessible via a network connection, this is likely because:
+
+1. You're trying to access the server via HTTP when it's running in stdio mode
+2. The server is not running in interactive mode, so it can't receive input or send output
+
+**Solution**: 
+- Ensure you're using the JSON-RPC over stdio interface
+- Run the server with the `-i` flag if using Docker
+- Use the `start-non-interactive.sh` script if running in a non-interactive environment
+
+#### "No response from server"
+
+If the server doesn't respond to requests:
+
+1. Check that the server is running in the correct mode
+2. Verify that stdin/stdout are properly connected
+3. Check the logs for any errors
+
+**Solution**:
+- Run the server with the `test-stdio.sh` script to verify it works correctly
+- Use the `start-non-interactive.sh` script and check the named pipes
+- Check the log file for any errors
 
 ## License
 
