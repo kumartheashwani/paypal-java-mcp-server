@@ -7,6 +7,7 @@ import com.example.mcpserver.service.ToolExecutorService;
 import com.example.mcpserver.service.ToolRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,8 @@ public class JsonRpcHandler {
                     return handleExecuteFunction(request);
                 case "getTools":
                     return handleGetTools(request);
+                case "initialize":
+                    return handleInitialize(request);
                 default:
                     return JsonRpcResponse.error(request.getId(), METHOD_NOT_FOUND, "Method not found", request.getMethod());
             }
@@ -141,6 +144,36 @@ public class JsonRpcHandler {
             return JsonRpcResponse.success(request.getId(), toolRegistry.getAvailableTools());
         } catch (Exception e) {
             log.error("Error handling get tools request", e);
+            return JsonRpcResponse.error(request.getId(), INTERNAL_ERROR, "Internal error", e.getMessage());
+        }
+    }
+    
+    /**
+     * Handles an initialize request
+     * 
+     * @param request The JSON-RPC request
+     * @return The JSON-RPC response with the server capabilities
+     */
+    private JsonRpcResponse handleInitialize(JsonRpcRequest request) {
+        try {
+            log.info("Handling initialize request");
+            
+            // Create a capabilities object
+            ObjectNode capabilities = objectMapper.createObjectNode();
+            capabilities.put("protocol_version", "1.0");
+            capabilities.put("name", "PayPal Java MCP Server");
+            
+            // Add supported methods
+            capabilities.put("supports_completions", true);
+            capabilities.put("supports_execute_function", true);
+            capabilities.put("supports_get_tools", true);
+            
+            // Add available tools
+            capabilities.set("tools", objectMapper.valueToTree(toolRegistry.getAvailableTools()));
+            
+            return JsonRpcResponse.success(request.getId(), capabilities);
+        } catch (Exception e) {
+            log.error("Error handling initialize request", e);
             return JsonRpcResponse.error(request.getId(), INTERNAL_ERROR, "Internal error", e.getMessage());
         }
     }

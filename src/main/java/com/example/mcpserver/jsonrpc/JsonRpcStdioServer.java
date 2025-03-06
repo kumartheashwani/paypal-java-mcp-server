@@ -33,14 +33,24 @@ public class JsonRpcStdioServer implements CommandLineRunner {
     public void run(String... args) {
         log.info("Starting JSON-RPC stdio server");
         
-        // Process a dummy getTools request to ensure tools are loaded
+        // Process a dummy initialize request to ensure capabilities are loaded
         try {
-            String dummyRequest = "{\"jsonrpc\":\"2.0\",\"method\":\"getTools\",\"id\":\"init\"}";
-            log.debug("Processing initialization request: {}", dummyRequest);
-            String response = jsonRpcHandler.handleRequest(dummyRequest);
+            String initRequest = "{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"id\":\"init\"}";
+            log.debug("Processing initialization request: {}", initRequest);
+            String response = jsonRpcHandler.handleRequest(initRequest);
             log.debug("Initialization response: {}", response);
         } catch (Exception e) {
             log.error("Error during initialization", e);
+        }
+        
+        // Process a dummy getTools request to ensure tools are loaded
+        try {
+            String toolsRequest = "{\"jsonrpc\":\"2.0\",\"method\":\"getTools\",\"id\":\"init-tools\"}";
+            log.debug("Processing tools initialization request: {}", toolsRequest);
+            String response = jsonRpcHandler.handleRequest(toolsRequest);
+            log.debug("Tools initialization response: {}", response);
+        } catch (Exception e) {
+            log.error("Error during tools initialization", e);
         }
         
         // Create a dedicated thread for handling stdin/stdout to avoid blocking the main thread
