@@ -29,6 +29,7 @@ java \
   -Dspring.main.lazy-initialization=true \
   -Dspring.mvc.async.request-timeout=60s \
   -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration \
+  -Djsonrpc.stdio.interactive=true \
   -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar < input.json 2>/dev/null
 
 echo "Test completed."
