@@ -26,7 +26,7 @@ In this mode, you can access the API at `http://localhost:8080/api/mcp`.
 To run the server in stdio mode, which uses JSON-RPC over standard input/output:
 
 ```bash
-java -Dspring.profiles.active=stdio -Dspring.main.web-application-type=NONE -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
+java -Dspring.profiles.active=stdio -Dspring.main.web-application-type=NONE -Djsonrpc.stdio.interactive=true -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
 ```
 
 In this mode, the server reads JSON-RPC requests from stdin and writes responses to stdout. All logs are written to stderr and a log file.
@@ -66,7 +66,7 @@ cat /path/to/output_pipe
 
 #### Running with Docker
 
-When running the server in a Docker container, you must use the `-i` flag to provide stdin connectivity:
+When running the server in a Docker container, you **MUST** use the `-i` flag to provide stdin connectivity:
 
 ```bash
 docker run -i paypal-mcp-jsonrpc
@@ -137,16 +137,18 @@ The server includes a `smithery-config.json` file that configures the server for
     "-Dspring.main.web-application-type=NONE",
     "-DLOG_FILE=/logs/mcp-server.log",
     "-Dlogging.config=classpath:logback-stdio.xml",
+    "-Djsonrpc.stdio.interactive=true",
     "-jar",
     "/app/app.jar"
   ]
 }
 ```
 
-**Important**: When using the server with Smithery, ensure that:
-1. The `interactive` flag is set to `true` in the Smithery configuration if your environment supports interactive processes
-2. You are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP
-3. If your environment does not support interactive processes, use the `start-non-interactive.sh` script instead
+**CRITICAL**: When using the server with Smithery, ensure that:
+1. The `"interactive": true` flag is set in the Smithery configuration
+2. The `-Djsonrpc.stdio.interactive=true` argument is included in the startup command
+3. You are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP
+4. If your environment does not support interactive processes, use the `start-non-interactive.sh` script instead
 
 ### Non-Interactive Deployment
 
@@ -368,7 +370,7 @@ docker run -p 8080:8080 paypal-mcp-rest-api
 
 #### Run JSON-RPC Server
 
-The JSON-RPC server reads from stdin and writes to stdout, so it needs to be run with interactive mode:
+The JSON-RPC server reads from stdin and writes to stdout, so it **MUST** be run with interactive mode:
 
 ```bash
 docker run -i paypal-mcp-jsonrpc
@@ -400,10 +402,12 @@ If you see an error indicating that the server's tool list is not accessible via
 
 1. You're trying to access the server via HTTP when it's running in stdio mode
 2. The server is not running in interactive mode, so it can't receive input or send output
+3. The `-Djsonrpc.stdio.interactive=true` flag is missing from the startup command
 
 **Solution**: 
 - Ensure you're using the JSON-RPC over stdio interface
 - Run the server with the `-i` flag if using Docker
+- Add the `-Djsonrpc.stdio.interactive=true` flag to the startup command
 - Use the `start-non-interactive.sh` script if running in a non-interactive environment
 
 #### "Server fails to initialize in a non-interactive environment"
