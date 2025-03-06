@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "PayPal Java MCP Server with JSON-RPC over stdio interface",
   "type": "stdio",
-  "interactive": true,
+  "interactive": false,
   "command": "java",
   "args": [
     "-Dspring.profiles.active=stdio",
@@ -15,7 +15,7 @@
     "-Dspring.jmx.enabled=false",
     "-Dspring.main.lazy-initialization=true",
     "-Dspring.mvc.async.request-timeout=60s",
-    "-Djsonrpc.stdio.interactive=true",
+    "-Djsonrpc.stdio.interactive=false",
     "-jar",
     "/app/app.jar"
   ],

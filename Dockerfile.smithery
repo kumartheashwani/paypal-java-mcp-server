@@ -17,16 +17,9 @@ ENV SPRING_JMX_ENABLED=false
 ENV SPRING_MAIN_WEB_APPLICATION_TYPE=none
 ENV SPRING_MVC_ASYNC_REQUEST_TIMEOUT=60s
 
-# IMPORTANT: This container MUST be run with the -i flag (interactive mode)
-# to provide stdin/stdout connectivity for the JSON-RPC stdio interface
-# Example: docker run -i paypal-mcp-jsonrpc
-
 # The command will be provided by Smithery configuration
-# Smithery will run: java -Dspring.profiles.active=stdio -DLOG_FILE=/logs/mcp-server.log -jar /app/app.jar
 # But we also set these as environment variables for redundancy
 
-# Set stdin to be open even if not attached and make sure we're using a tty
-# This helps ensure the container can receive input even in some non-interactive environments
 ENTRYPOINT ["java", \
   "-Dspring.profiles.active=stdio", \
   "-Dspring.main.web-application-type=NONE", \
@@ -37,7 +30,7 @@ ENTRYPOINT ["java", \
   "-Dspring.jmx.enabled=false", \
   "-Dspring.main.lazy-initialization=true", \
   "-Dspring.mvc.async.request-timeout=60s", \
-  "-Djsonrpc.stdio.interactive=true", \
+  "-Djsonrpc.stdio.interactive=false", \
   "-jar", "/app/app.jar"]
 
 # Ensure the container knows it should be run interactively
