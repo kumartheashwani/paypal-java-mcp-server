@@ -1,1 +1,1 @@
-target/
+logs/ *.log stderr.txt stdout.txt error.log test-stderr.log output.json stdio.properties test-jsonrpc.sh .DS_Store target/
