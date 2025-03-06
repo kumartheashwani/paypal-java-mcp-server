@@ -242,6 +242,8 @@ The Smithery configuration includes:
 - Capabilities: `completions`, `executeFunction`
 - Tool definitions for `improveAuthorizationRate` and `calculate`
 
+**Note**: The JSON-RPC stdio server relies on the `stdio` profile to configure itself correctly. The profile ensures that the server reads from stdin and writes to stdout while maintaining the necessary functionality.
+
 ## Docker Deployment
 
 The project includes Docker support for both the REST API server and the JSON-RPC stdio server.
