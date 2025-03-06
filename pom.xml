@@ -49,6 +49,7 @@
 
     <build>
         <plugins>
+            <!-- Main Spring Boot application -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -61,26 +62,24 @@
                     </excludes>
                     <mainClass>com.example.mcpserver.PayPalMcpServerApplication</mainClass>
                 </configuration>
-            </plugin>
-            
-            <!-- Create an additional JAR for the JSON-RPC stdio server -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
                 <executions>
+                    <!-- Default execution for the main application -->
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                    
+                    <!-- Additional execution for the stdio server -->
                     <execution>
                         <id>stdio-jar</id>
-                        <phase>package</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>repackage</goal>
                         </goals>
                         <configuration>
                             <classifier>stdio</classifier>
-                            <archive>
-                                <manifest>
-                                    <mainClass>com.example.mcpserver.jsonrpc.JsonRpcStdioApplication</mainClass>
-                                </manifest>
-                            </archive>
+                            <mainClass>com.example.mcpserver.jsonrpc.JsonRpcStdioApplication</mainClass>
                         </configuration>
                     </execution>
                 </executions>

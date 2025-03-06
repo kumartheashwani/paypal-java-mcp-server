@@ -19,4 +19,8 @@ RUN mkdir -p /app/logs
 ENV SPRING_PROFILES_ACTIVE=stdio
 ENV LOGGING_FILE_NAME=/app/logs/mcp-server.log
 
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
+  CMD java -version || exit 1
+
 ENTRYPOINT ["java","-jar","/app/app.jar"] 
