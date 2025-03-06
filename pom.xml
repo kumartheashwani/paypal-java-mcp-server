@@ -59,7 +59,31 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <mainClass>com.example.mcpserver.PayPalMcpServerApplication</mainClass>
                 </configuration>
+            </plugin>
+            
+            <!-- Create an additional JAR for the JSON-RPC stdio server -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>stdio-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>stdio</classifier>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.example.mcpserver.jsonrpc.JsonRpcStdioApplication</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -4,7 +4,7 @@ A Java-based Model Context Protocol (MCP) server implementation using Spring Boo
 
 ## Overview
 
-This project implements a Model Context Protocol server that specializes in providing recommendations to improve PayPal authorization rates and performing basic math calculations. It provides a RESTful API for clients to send requests and receive responses.
+This project implements a Model Context Protocol server that specializes in providing recommendations to improve PayPal authorization rates and performing basic math calculations. It provides both a RESTful API and a JSON-RPC over stdio interface for clients to send requests and receive responses.
 
 ## Features
 
@@ -14,6 +14,7 @@ This project implements a Model Context Protocol server that specializes in prov
 - Error handling and logging
 - Authorization rate improvement tool
 - Basic calculator tool
+- JSON-RPC over stdio support for Smithery deployment
 
 ## Prerequisites
 
@@ -42,21 +43,39 @@ Build the application:
 mvn clean package
 ```
 
-Run the application:
+#### Running as a Web Server
+
+Run the application as a web server:
 
 ```bash
 java -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT.jar
 ```
 
+#### Running as a JSON-RPC stdio Server (for Smithery)
+
+Run the application as a JSON-RPC stdio server:
+
+```bash
+./run-stdio.sh
+```
+
+Or directly:
+
+```bash
+java -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
+```
+
 ## API Usage
 
-### Health Check
+### REST API
+
+#### Health Check
 
 ```bash
 curl http://localhost:8080/api/v1/health
 ```
 
-### Completions Endpoint
+#### Completions Endpoint
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/completions \
@@ -79,29 +98,7 @@ curl -X POST http://localhost:8080/api/v1/completions \
   }'
 ```
 
-### Authorization Rate Improvement Tool
-
-The server includes a special tool that is automatically triggered when a user mentions improving authorization rates. For example:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "How can I improve my authorization rate for my merchant account?",
-    "messages": [
-      {
-        "role": "system",
-        "content": "You are a helpful PayPal assistant."
-      },
-      {
-        "role": "user",
-        "content": "I need to improve my authorization rate. My merchant ID is MERCH123."
-      }
-    ]
-  }'
-```
-
-You can also directly invoke the tool:
+#### Authorization Rate Improvement Tool
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/tools/improveAuthorizationRate/execute \
@@ -113,29 +110,7 @@ curl -X POST http://localhost:8080/api/v1/tools/improveAuthorizationRate/execute
   }'
 ```
 
-### Calculator Tool
-
-The server includes a calculator tool that can perform basic math operations. It is automatically triggered when a user mentions math operations or uses mathematical expressions. For example:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "What is 5 + 3?"
-  }'
-```
-
-Or with more explicit operation naming:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "Can you add 10 and 20?"
-  }'
-```
-
-You can also directly invoke the calculator tool:
+#### Calculator Tool
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/tools/calculate/execute \
@@ -147,9 +122,29 @@ curl -X POST http://localhost:8080/api/v1/tools/calculate/execute \
   }'
 ```
 
+### JSON-RPC over stdio
+
+The JSON-RPC over stdio interface accepts JSON-RPC 2.0 requests on stdin and writes responses to stdout. Each request and response is a single line of JSON.
+
+#### Completions Request
+
+```json
+{"jsonrpc":"2.0","method":"completions","params":{"query":"How can I improve my authorization rate?","messages":[{"role":"system","content":"You are a helpful PayPal assistant."},{"role":"user","content":"I need to improve my authorization rate. My merchant ID is MERCH123."}],"context":{"merchantId":"MERCH123"}},"id":"1"}
+```
+
+#### Execute Function Request
+
+```json
+{"jsonrpc":"2.0","method":"executeFunction","params":{"function":"improveAuthorizationRate","arguments":{"merchantId":"MERCH123","timeframe":"last_30_days","transactionType":"card"}},"id":"2"}
+```
+
+```json
+{"jsonrpc":"2.0","method":"executeFunction","params":{"function":"calculate","arguments":{"operation":"multiply","a":6,"b":7}},"id":"3"}
+```
+
 ## Response Format
 
-### Authorization Rate Tool Response
+### REST API Response
 
 ```json
 {
@@ -195,28 +190,10 @@ Recommendations to Improve Authorization Rate:
 }
 ```
 
-### Calculator Tool Response
+### JSON-RPC Response
 
 ```json
-{
-  "content": "The result of 6 × 7 = 42.0",
-  "toolCalls": [
-    {
-      "id": "67890-12345",
-      "type": "function",
-      "function": {
-        "name": "calculate",
-        "arguments": "{\"operation\":\"multiply\",\"a\":6,\"b\":7}"
-      }
-    }
-  ],
-  "metadata": {
-    "operation": "multiply",
-    "a": 6,
-    "b": 7,
-    "result": 42.0
-  }
-}
+{"jsonrpc":"2.0","result":{"content":"Based on the analysis of your authorization rates, here are the recommendations:\n\nCurrent Authorization Rate: 85.3%\nCurrent Decline Rate: 14.7%\nTotal Transactions: 12500\n\nTop Decline Reasons:\n- insufficient funds: 42.5%\n- risk triggers: 23.8%\n- expired card: 12.3%\n- invalid data: 10.7%\n- other: 10.7%\n\nRecommendations to Improve Authorization Rate:\n1. Implement Account Updater (Priority: high, Est. Impact: +3.5%)\n   Use PayPal's Account Updater service to automatically update expired or replaced cards\n\n2. Optimize AVS Settings (Priority: medium, Est. Impact: +2.1%)\n   Adjust Address Verification Service settings to reduce false declines\n\n3. Implement Intelligent Retry Logic (Priority: high, Est. Impact: +4.2%)\n   Add smart retry logic for declined transactions with specific reason codes\n\n4. Review Risk Rules (Priority: medium, Est. Impact: +2.8%)\n   Analyze and adjust risk rules to reduce false positives","toolCalls":[{"id":"12345-67890","type":"function","function":{"name":"improveAuthorizationRate","arguments":"{\"merchantId\":\"MERCH123\",\"timeframe\":\"last_30_days\",\"transactionType\":\"all\"}"}}],"metadata":{"merchantId":"MERCH123","timeframe":"last_30_days"}},"id":"1"}
 ```
 
 ## Available Tools
@@ -238,6 +215,22 @@ This tool performs basic math operations.
 - `operation` (required): The operation to perform (add, subtract, multiply, divide)
 - `a` (required): First operand
 - `b` (required): Second operand
+
+## Deploying to Smithery
+
+To deploy this server to Smithery:
+
+1. Build the application:
+   ```bash
+   mvn clean package
+   ```
+
+2. Copy the stdio JAR to your Smithery deployment directory:
+   ```bash
+   cp target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar /path/to/smithery/
+   ```
+
+3. Configure Smithery to use the JAR as a stdio server.
 
 ## License
 
