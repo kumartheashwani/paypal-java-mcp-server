@@ -1,20 +1,103 @@
 # PayPal Java MCP Server
 
-A Java-based Model Context Protocol (MCP) server implementation using Spring Boot.
-
-## Overview
-
-This project implements a Model Context Protocol server that specializes in providing recommendations to improve PayPal authorization rates and performing basic math calculations. It provides both a RESTful API and a JSON-RPC over stdio interface for clients to send requests and receive responses.
+This is a Java implementation of a PayPal MCP (Merchant Capability Platform) server that provides tools for analyzing and improving payment processing.
 
 ## Features
 
-- MCP-compliant API endpoints
-- Support for context and metadata in requests
-- Tool call handling
-- Error handling and logging
-- Authorization rate improvement tool
-- Basic calculator tool
-- JSON-RPC over stdio support for Smithery deployment
+- JSON-RPC over HTTP API for web clients
+- JSON-RPC over stdio interface for Smithery integration
+- Tools for analyzing authorization rates
+- Basic calculator functionality for testing
+
+## Running the Server
+
+### Web Mode (Default)
+
+To run the server in web mode, which exposes a REST API on port 8080:
+
+```bash
+java -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT.jar
+```
+
+In this mode, you can access the API at `http://localhost:8080/api/mcp`.
+
+### JSON-RPC over stdio Mode
+
+To run the server in stdio mode, which uses JSON-RPC over standard input/output:
+
+```bash
+java -Dspring.profiles.active=stdio -Dspring.main.web-application-type=NONE -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
+```
+
+In this mode, the server reads JSON-RPC requests from stdin and writes responses to stdout. All logs are written to stderr and a log file.
+
+You can test the stdio mode using the provided test script:
+
+```bash
+./test-stdio.sh
+```
+
+## JSON-RPC Protocol
+
+The server supports the following JSON-RPC methods:
+
+### initialize
+
+Initializes the server and returns its capabilities:
+
+```json
+{"jsonrpc":"2.0","method":"initialize","id":"1"}
+```
+
+### getTools
+
+Returns a list of available tools:
+
+```json
+{"jsonrpc":"2.0","method":"getTools","id":"2"}
+```
+
+### executeFunction
+
+Executes a function with the specified arguments:
+
+```json
+{"jsonrpc":"2.0","method":"executeFunction","params":{"function":"calculate","arguments":{"operation":"add","a":5,"b":3}},"id":"3"}
+```
+
+## Deployment with Smithery
+
+This server is designed to be deployed with Smithery, which requires the JSON-RPC over stdio interface.
+
+To prepare the server for Smithery deployment:
+
+```bash
+./prepare-smithery.sh
+```
+
+This will create a `smithery-deploy` directory with all the necessary files for deployment.
+
+### Smithery Configuration
+
+The server includes a `smithery-config.json` file that configures the server for Smithery:
+
+```json
+{
+  "name": "paypal-java-mcp-server",
+  "type": "stdio",
+  "command": "java",
+  "args": [
+    "-Dspring.profiles.active=stdio",
+    "-Dspring.main.web-application-type=NONE",
+    "-DLOG_FILE=/logs/mcp-server.log",
+    "-Dlogging.config=classpath:logback-stdio.xml",
+    "-jar",
+    "/app/app.jar"
+  ]
+}
+```
+
+**Important**: When using the server with Smithery, ensure that you are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP. The server will not start a web server when running with the `stdio` profile.
 
 ## Prerequisites
 
@@ -41,35 +124,6 @@ Build the application:
 
 ```bash
 mvn clean package
-```
-
-#### Running as a Web Server
-
-Run the application as a web server:
-
-```bash
-java -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT.jar
-```
-
-#### Running as a JSON-RPC stdio Server (for Smithery)
-
-Run the application as a JSON-RPC stdio server:
-
-```bash
-./run-stdio.sh
-```
-
-Or directly with all required configuration parameters:
-
-```bash
-java \
-  -Dspring.profiles.active=stdio \
-  -Dlogging.file.name=logs/mcp-server.log \
-  -Dlogging.level.com.example.mcpserver=DEBUG \
-  -Dspring.jmx.enabled=false \
-  -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration \
-  -Dspring.mvc.async.request-timeout=60000 \
-  -jar target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar
 ```
 
 ## API Usage
@@ -222,46 +276,6 @@ This tool performs basic math operations.
 - `operation` (required): The operation to perform (add, subtract, multiply, divide)
 - `a` (required): First operand
 - `b` (required): Second operand
-
-## Deploying to Smithery
-
-To deploy this server to Smithery:
-
-1. Use the provided preparation script:
-   ```bash
-   ./prepare-smithery.sh
-   ```
-   This will create a `smithery-deploy` directory with the necessary files.
-
-2. Upload the contents of the `smithery-deploy` directory to your Smithery server.
-
-3. Configure Smithery to use the provided `smithery-config.json` file.
-
-4. Start the service using the provided script:
-   ```bash
-   ./start.sh
-   ```
-
-   Or with the explicit command:
-   ```bash
-   java \
-     -Dspring.profiles.active=stdio \
-     -Dlogging.file.name=logs/mcp-server.log \
-     -Dlogging.level.com.example.mcpserver=DEBUG \
-     -Dspring.jmx.enabled=false \
-     -Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration \
-     -Dspring.mvc.async.request-timeout=60000 \
-     -jar app.jar
-   ```
-
-The Smithery configuration includes:
-- Command: `java`
-- Arguments: `-Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar`
-- Environment variables: `SPRING_PROFILES_ACTIVE=stdio`, `LOGGING_FILE_NAME=/logs/mcp-server.log`
-- Capabilities: `completions`, `executeFunction`
-- Tool definitions for `improveAuthorizationRate` and `calculate`
-
-**Note**: The JSON-RPC stdio server relies on the `stdio` profile to configure itself correctly. The profile ensures that the server reads from stdin and writes to stdout while maintaining the necessary functionality.
 
 ## Docker Deployment
 

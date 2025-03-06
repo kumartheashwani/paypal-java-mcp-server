@@ -20,6 +20,9 @@ public class JsonRpcStdioApplication {
         System.setProperty("spring.main.banner-mode", "off");
         System.setProperty("spring.output.ansi.enabled", "never");
         
+        // Explicitly disable web server
+        System.setProperty("spring.main.web-application-type", "NONE");
+        
         SpringApplication app = new SpringApplication(JsonRpcStdioApplication.class);
         
         // Disable banner and startup info to keep stdout clean
