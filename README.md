@@ -232,6 +232,62 @@ To deploy this server to Smithery:
 
 3. Configure Smithery to use the JAR as a stdio server.
 
+## Docker Deployment
+
+The project includes Docker support for both the REST API server and the JSON-RPC stdio server.
+
+### Building Docker Images
+
+#### Build Both Images Using Docker Compose
+
+```bash
+docker-compose build
+```
+
+#### Build REST API Server Image Only
+
+```bash
+docker build --target rest-api -t paypal-mcp-rest-api .
+```
+
+#### Build JSON-RPC Server Image Only
+
+```bash
+docker build -f Dockerfile.jsonrpc -t paypal-mcp-jsonrpc .
+```
+
+### Running with Docker
+
+#### Run REST API Server
+
+```bash
+docker run -p 8080:8080 paypal-mcp-rest-api
+```
+
+#### Run JSON-RPC Server
+
+The JSON-RPC server reads from stdin and writes to stdout, so it needs to be run with interactive mode:
+
+```bash
+docker run -i paypal-mcp-jsonrpc
+```
+
+Or use the provided script:
+
+```bash
+./run-docker-jsonrpc.sh
+```
+
+#### Using Docker Compose
+
+Start the REST API server:
+
+```bash
+docker-compose up rest-api
+```
+
+Note: The JSON-RPC stdio server is not typically run directly with docker-compose since it requires stdin/stdout interaction.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

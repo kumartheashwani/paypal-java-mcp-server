@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # REST API Server
+  rest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: rest-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    volumes:
+      - ./logs:/app/logs
+
+  # JSON-RPC stdio Server
+  json-rpc:
+    build:
+      context: .
+      dockerfile: Dockerfile.jsonrpc
+    environment:
+      - SPRING_PROFILES_ACTIVE=stdio
+    volumes:
+      - ./logs:/app/logs
+    # Note: The JSON-RPC stdio server reads from stdin and writes to stdout,
+    # so it's typically not used directly with docker-compose but rather
+    # in environments that can pipe stdin/stdout appropriately. 

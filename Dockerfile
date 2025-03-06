@@ -7,12 +7,16 @@ COPY pom.xml .
 COPY src src
 
 RUN ./mvnw install -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
-FROM eclipse-temurin:17-jre
+# REST API Server Image
+FROM eclipse-temurin:17-jre as rest-api
 VOLUME /tmp
-ARG DEPENDENCY=/workspace/app/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.example.mcpserver.PayPalMcpServerApplication"] 
+COPY --from=build /workspace/app/target/paypal-java-mcp-server-0.0.1-SNAPSHOT.jar /app/app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+# JSON-RPC stdio Server Image
+FROM eclipse-temurin:17-jre as json-rpc
+VOLUME /tmp
+COPY --from=build /workspace/app/target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar /app/app.jar
+ENTRYPOINT ["java","-jar","/app/app.jar"] 
