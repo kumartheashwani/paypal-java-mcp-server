@@ -41,18 +41,20 @@ You can test the stdio mode using the provided test script:
 
 #### Running in Non-Interactive Environments
 
-If you need to run the server in a non-interactive environment, you can use the provided `start-non-interactive.sh` script, which creates named pipes for stdin/stdout:
+If you need to run the server in a non-interactive environment (where stdin/stdout connectivity is not available), you can use the provided `start-non-interactive.sh` script:
 
 ```bash
 ./start-non-interactive.sh
 ```
 
-This script will:
-1. Create named pipes for stdin and stdout
-2. Start the server in the background
-3. Print the paths to the pipes and example commands for interacting with them
+This script:
+1. Creates named pipes for stdin and stdout
+2. Starts background processes to handle the pipes
+3. Starts the server with the `-Djsonrpc.stdio.interactive=false` flag
+4. Automatically sends an initialize request to the server
+5. Provides the pipe paths for you to interact with the server
 
-You can then interact with the server by writing to the input pipe and reading from the output pipe:
+The server will pre-initialize all capabilities and tools, so it's ready to respond to requests even without initial input. You can then interact with the server by writing to the input pipe and reading from the output pipe:
 
 ```bash
 # Send a request
@@ -114,7 +116,11 @@ To prepare the server for Smithery deployment:
 ./prepare-smithery.sh
 ```
 
-This will create a `smithery-deploy` directory with all the necessary files for deployment.
+This will create a `smithery-deploy` directory with all the necessary files for deployment, including:
+- The server JAR file
+- The Smithery configuration file
+- Scripts for running in interactive and non-interactive modes
+- A README with deployment instructions
 
 ### Smithery Configuration
 
@@ -138,9 +144,17 @@ The server includes a `smithery-config.json` file that configures the server for
 ```
 
 **Important**: When using the server with Smithery, ensure that:
-1. The `interactive` flag is set to `true` in the Smithery configuration
+1. The `interactive` flag is set to `true` in the Smithery configuration if your environment supports interactive processes
 2. You are using the JSON-RPC over stdio interface and not attempting to connect to the server via HTTP
-3. The server will not start a web server when running with the `stdio` profile
+3. If your environment does not support interactive processes, use the `start-non-interactive.sh` script instead
+
+### Non-Interactive Deployment
+
+If your Smithery environment does not support interactive processes, you have two options:
+
+1. **Use the start-non-interactive.sh script**: This script creates named pipes and handles the stdin/stdout connectivity for you.
+
+2. **Modify the Smithery configuration**: Set `"interactive": false` in the Smithery configuration and ensure the server is started with the `-Djsonrpc.stdio.interactive=false` flag.
 
 ## Prerequisites
 
@@ -391,6 +405,19 @@ If you see an error indicating that the server's tool list is not accessible via
 - Ensure you're using the JSON-RPC over stdio interface
 - Run the server with the `-i` flag if using Docker
 - Use the `start-non-interactive.sh` script if running in a non-interactive environment
+
+#### "Server fails to initialize in a non-interactive environment"
+
+If the server fails to initialize in a non-interactive environment:
+
+1. Use the `start-non-interactive.sh` script, which is specifically designed for non-interactive environments
+2. Run the server with the `-Djsonrpc.stdio.interactive=false` flag
+3. Ensure the named pipes are properly set up and accessible
+
+**Solution**:
+```bash
+./start-non-interactive.sh
+```
 
 #### "No response from server"
 

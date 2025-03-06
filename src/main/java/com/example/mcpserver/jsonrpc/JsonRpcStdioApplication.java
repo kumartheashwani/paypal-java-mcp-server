@@ -23,6 +23,16 @@ public class JsonRpcStdioApplication {
         // Explicitly disable web server
         System.setProperty("spring.main.web-application-type", "NONE");
         
+        // Set non-interactive mode property if stdin is not available
+        // This will be used by the JsonRpcStdioServer to adjust its behavior
+        if (System.console() != null) {
+            System.setProperty("jsonrpc.stdio.interactive", "true");
+        } else {
+            System.setProperty("jsonrpc.stdio.interactive", "false");
+            System.err.println("WARNING: Running in non-interactive mode. " +
+                              "The server may not receive input if stdin is not properly connected.");
+        }
+        
         SpringApplication app = new SpringApplication(JsonRpcStdioApplication.class);
         
         // Disable banner and startup info to keep stdout clean
