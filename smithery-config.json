@@ -1,0 +1,68 @@
+{
+  "name": "paypal-java-mcp-server",
+  "version": "0.0.1",
+  "description": "PayPal Java MCP Server with JSON-RPC over stdio interface",
+  "type": "stdio",
+  "command": "java",
+  "args": [
+    "-Dspring.profiles.active=stdio",
+    "-Dlogging.file.name=/logs/mcp-server.log",
+    "-jar",
+    "/app/app.jar"
+  ],
+  "env": {
+    "SPRING_PROFILES_ACTIVE": "stdio",
+    "LOGGING_FILE_NAME": "/logs/mcp-server.log"
+  },
+  "capabilities": {
+    "completions": true,
+    "executeFunction": true
+  },
+  "tools": [
+    {
+      "name": "improveAuthorizationRate",
+      "description": "Analyzes transaction data and provides recommendations to improve authorization rates",
+      "parameters": {
+        "merchantId": {
+          "type": "string",
+          "description": "The merchant ID to analyze",
+          "required": true
+        },
+        "timeframe": {
+          "type": "string",
+          "description": "The timeframe for analysis",
+          "default": "last_30_days",
+          "enum": ["last_7_days", "last_30_days", "last_90_days", "last_year"]
+        },
+        "transactionType": {
+          "type": "string",
+          "description": "Transaction type filter",
+          "default": "all",
+          "enum": ["all", "card", "bank", "wallet"]
+        }
+      }
+    },
+    {
+      "name": "calculate",
+      "description": "Performs basic math operations",
+      "parameters": {
+        "operation": {
+          "type": "string",
+          "description": "The operation to perform",
+          "required": true,
+          "enum": ["add", "subtract", "multiply", "divide"]
+        },
+        "a": {
+          "type": "number",
+          "description": "First operand",
+          "required": true
+        },
+        "b": {
+          "type": "number",
+          "description": "Second operand",
+          "required": true
+        }
+      }
+    }
+  ]
+} 

@@ -220,17 +220,27 @@ This tool performs basic math operations.
 
 To deploy this server to Smithery:
 
-1. Build the application:
+1. Use the provided preparation script:
    ```bash
-   mvn clean package
+   ./prepare-smithery.sh
+   ```
+   This will create a `smithery-deploy` directory with the necessary files.
+
+2. Upload the contents of the `smithery-deploy` directory to your Smithery server.
+
+3. Configure Smithery to use the provided `smithery-config.json` file.
+
+4. Alternatively, you can manually configure Smithery to run:
+   ```bash
+   java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar app.jar
    ```
 
-2. Copy the stdio JAR to your Smithery deployment directory:
-   ```bash
-   cp target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar /path/to/smithery/
-   ```
-
-3. Configure Smithery to use the JAR as a stdio server.
+The Smithery configuration includes:
+- Command: `java`
+- Arguments: `-Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar`
+- Environment variables: `SPRING_PROFILES_ACTIVE=stdio`, `LOGGING_FILE_NAME=/logs/mcp-server.log`
+- Capabilities: `completions`, `executeFunction`
+- Tool definitions for `improveAuthorizationRate` and `calculate`
 
 ## Docker Deployment
 

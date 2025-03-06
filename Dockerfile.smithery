@@ -1,0 +1,12 @@
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Copy the JAR file
+COPY target/paypal-java-mcp-server-0.0.1-SNAPSHOT-stdio.jar /app/app.jar
+
+# Create a log directory
+RUN mkdir -p /logs
+
+# The command will be provided by Smithery configuration
+# Smithery will run: java -Dspring.profiles.active=stdio -Dlogging.file.name=/logs/mcp-server.log -jar /app/app.jar 
